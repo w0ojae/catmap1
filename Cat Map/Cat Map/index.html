@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>냥이지도 🐾 — 길고양이 출몰 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/styles.css"></head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="site-hdr">
+  <div class="hdr-in">
+    <div class="logo">냥이지도 🐾</div>
+    <nav class="site-nav">
+      <button class="nav-btn active" onclick="sw('up')">📸 사진 업로드</button>
+      <button class="nav-btn" onclick="sw('map')">🗺️ 지도</button>
+      <button class="nav-btn" onclick="sw('hm')">🔥 히트맵</button>
+      <button class="nav-btn" onclick="sw('jn')">📖 관찰일지</button>
+      <button class="nav-btn" onclick="sw('bd')">🏅 뱃지</button>
+      <button class="nav-btn" onclick="sw('photo')">🖼️ 사진 광장</button>
+    </nav>
+    <div class="hdr-right">
+      <button class="notif">🔔</button>
+      <div class="user-pill" onclick="sw('profile')" title="프로필 보기" style="cursor:pointer">
+        <div class="u-ava-sm">🐱</div>고양이탐정
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ① 업로드 -->
+  <div id="sc-up" class="screen active">
+    <div class="up-hero">
+      <h1>🐱 길고양이 제보하기</h1>
+      <p>오늘 발견한 냥이를 지도에 기록해 주세요. 여러분의 기록이 쌓여 지역 고양이 지도가 완성됩니다.</p>
+    </div>
+    <div class="up-wrap">
+
+      <!-- LEFT -->
+      <div>
+        <div class="dropzone" id="dz" onclick="document.getElementById('fi-img').click()">
+          <div class="dz-ph">
+            <span class="dz-ico">📷</span>
+            <div class="dz-txt">클릭하거나 이미지를 드래그해서 업로드</div>
+            <div class="dz-sub">JPG · PNG · HEIC 지원 · 최대 20MB</div>
+          </div>
+          <img class="prev-img" id="prev-img" alt="preview">
+        </div>
+        <input type="file" id="fi-img" accept="image/*" style="display:none">
+
+        <div class="tips-card">
+          <div class="tips-ttl">📌 사진 촬영 팁</div>
+          <div class="tip"><span>🎯</span>고양이의 얼굴과 몸 전체가 잘 보이도록 찍어주세요</div>
+          <div class="tip"><span>👂</span>귀 모양·특이한 무늬가 잘 나오면 AI 판별 정확도가 높아져요</div>
+          <div class="tip"><span>🏷️</span>TNR 완료 고양이는 귀 끝이 살짝 잘려 있어요</div>
+          <div class="tip"><span>🚫</span>고양이를 쫓거나 과도하게 접근하지 마세요</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: 폼 -->
+      <div class="form-card">
+        <div class="f-sec-ttl">발견 정보</div>
+        <div class="f-row">
+          <div class="f-grp">
+            <label class="f-lbl">발견 날짜</label>
+            <input type="date" class="f-in" id="cdate">
+          </div>
+          <div class="f-grp">
+            <label class="f-lbl">발견 시간</label>
+            <input type="time" class="f-in" id="ctime">
+          </div>
+        </div>
+        <div class="f-grp">
+          <label class="f-lbl">위치</label>
+          <button class="loc-btn" id="locbtn" onclick="doLoc()">
+            <span>📍</span><span id="loctxt">GPS로 현재 위치 가져오기</span>
+          </button>
+        </div>
+
+        <div class="f-divider"></div>
+        <div class="f-sec-ttl">고양이 특징</div>
+
+        <div class="f-grp">
+          <label class="f-lbl">털색</label>
+          <div class="chips">
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:#F5A623"></span>치즈</div>
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:#1B1710;border:1px solid #555"></span>검은</div>
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:#eee;border:1px solid #ccc"></span>흰</div>
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:#7B5533"></span>고등어</div>
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:conic-gradient(#E8733A 0%,#E8733A 33%,#1B1710 33%,#1B1710 66%,#eee 66%)"></span>삼색</div>
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:#9E9E9E"></span>회색</div>
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:linear-gradient(135deg,#222 50%,#fff 50%);border:1px solid #ccc"></span>턱시도</div>
+            <div class="chip" onclick="selA(this)"><span class="cdot" style="background:#E8B46A"></span>크림</div>
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-grp">
+            <label class="f-lbl">무늬</label>
+            <div class="chips">
+              <div class="chip" onclick="selG(this)">단색</div>
+              <div class="chip" onclick="selG(this)">줄무늬</div>
+              <div class="chip" onclick="selG(this)">점박이</div>
+              <div class="chip" onclick="selG(this)">턱시도</div>
+            </div>
+          </div>
+          <div class="f-grp">
+            <label class="f-lbl">꼬리 특징</label>
+            <select class="f-in f-sel">
+              <option value="">선택해주세요</option>
+              <option>긴 꼬리</option>
+              <option>짧은 꼬리</option>
+              <option>꼬리 없음 (단미)</option>
+              <option>꼬부라진 꼬리</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="f-grp">
+          <div class="tog-row">
+            <span class="tog-lbl">🎀 목걸이 착용</span>
+            <div class="tog" id="colTog" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <div class="f-grp" style="margin-bottom:22px">
+          <label class="f-lbl">특이사항 (선택)</label>
+          <textarea class="f-in f-ta" placeholder="예: 오른쪽 귀 끝이 살짝 접혀 있음, TNR 완료된 개체, 목걸이에 이름표 있음"></textarea>
+        </div>
+        <button class="sub-btn" onclick="doSubmit()">📌 지도에 등록하기</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ② 지도 -->
+  <div id="sc-map" class="screen screen--map">
+    <aside class="map-sidebar">
+      <div class="sb-head">
+        <div class="sb-ttl">🗺️ 냥이 지도</div>
+        <div class="sb-search">
+          <span>🔍</span>
+          <input placeholder="이름, 지역 검색" oninput="filterByName(this.value)">
+        </div>
+      </div>
+      <div class="sb-filters">
+        <div class="sb-pill active" onclick="filterType('all',this)">🐾 전체</div>
+        <div class="sb-pill" onclick="filterType('cheese',this)">🟠 치즈</div>
+        <div class="sb-pill" onclick="filterType('black',this)">⚫ 검은</div>
+        <div class="sb-pill" onclick="filterType('white',this)">⚪ 흰</div>
+        <div class="sb-pill" onclick="filterType('mackerel',this)">🟤 고등어</div>
+        <div class="sb-pill" onclick="filterType('calico',this)">🔴 삼색</div>
+        <div class="sb-pill" onclick="filterType('gray',this)">🩶 회색</div>
+        <div class="sb-pill" onclick="filterType('tuxedo',this)">🖤 턱시도</div>
+        <div class="sb-pill" onclick="filterType('cream',this)">🍑 크림</div>
+      </div>
+      <div class="sb-catlist" id="sb-list"></div>
+    </aside>
+    <div class="map-main">
+      <div id="catmap"></div>
+    </div>
+  </div>
+
+
+  <!-- ③ 히트맵 -->
+  <div id="sc-hm" class="screen screen--map">
+    <div class="hm-main">
+      <div id="hmmap"></div>
+      <div class="hm-legend-box">
+        <div class="hm-leg-ttl">출몰 밀도</div>
+        <div class="hm-leg-row"><div class="hmdot" style="background:#E53935"></div>매우 많음</div>
+        <div class="hm-leg-row"><div class="hmdot" style="background:#FB8C00"></div>많음</div>
+        <div class="hm-leg-row"><div class="hmdot" style="background:#FDD835"></div>보통</div>
+        <div class="hm-leg-row"><div class="hmdot" style="background:#43A047"></div>적음</div>
+        <div class="hm-slider-row">
+          <div class="hm-slider-lbl">
+            <span>강도</span><span id="hm-opct-lbl">80%</span>
+          </div>
+          <input type="range" class="hm-slider" id="hm-opct"
+            min="20" max="100" value="80" oninput="setHmOpacity(this.value)">
+        </div>
+      </div>
+    </div>
+    <aside class="hm-sidebar">
+      <div class="hm-sb-head">
+        <div class="hm-sb-ttl">🔥 지역별 출몰 현황</div>
+        <div class="hm-sb-sub">울산광역시 전체 집계</div>
+        <div class="hm-total">
+          <div class="hm-total-n">384</div>
+          <div class="hm-total-l">마리 등록</div>
+        </div>
+      </div>
+      <div class="hm-stats-body">
+        <div class="hm-dist">
+          <div class="hm-dist-nm"><span>🔴 울산 남구</span><span class="hm-dist-cnt">142마리</span></div>
+          <div class="hm-bar-w"><div class="hm-bar" style="background:#E53935" data-p="88"></div></div>
+        </div>
+        <div class="hm-dist">
+          <div class="hm-dist-nm"><span>🟠 울산 중구</span><span class="hm-dist-cnt">98마리</span></div>
+          <div class="hm-bar-w"><div class="hm-bar" style="background:#FB8C00" data-p="62"></div></div>
+        </div>
+        <div class="hm-dist">
+          <div class="hm-dist-nm"><span>🟡 울산 동구</span><span class="hm-dist-cnt">71마리</span></div>
+          <div class="hm-bar-w"><div class="hm-bar" style="background:#FDD835" data-p="45"></div></div>
+        </div>
+        <div class="hm-dist">
+          <div class="hm-dist-nm"><span>🟢 울산 북구</span><span class="hm-dist-cnt">44마리</span></div>
+          <div class="hm-bar-w"><div class="hm-bar" style="background:#43A047" data-p="28"></div></div>
+        </div>
+        <div class="hm-dist" style="margin-bottom:0">
+          <div class="hm-dist-nm"><span>🟢 울주군</span><span class="hm-dist-cnt">29마리</span></div>
+          <div class="hm-bar-w"><div class="hm-bar" style="background:#43A047" data-p="18"></div></div>
+        </div>
+
+        <div class="trend-card">
+          <div class="trend-ttl">🕐 시간대별 목격 빈도</div>
+          <div class="tr-row"><div class="tr-time">06–09시</div><div class="tr-bw"><div class="tr-b" style="width:55%"></div></div><div class="tr-n">55건</div></div>
+          <div class="tr-row"><div class="tr-time">12–15시</div><div class="tr-bw"><div class="tr-b" style="width:38%"></div></div><div class="tr-n">38건</div></div>
+          <div class="tr-row"><div class="tr-time">18–21시</div><div class="tr-bw"><div class="tr-b" style="width:88%"></div></div><div class="tr-n">88건</div></div>
+          <div class="tr-row"><div class="tr-time">21–24시</div><div class="tr-bw"><div class="tr-b" style="width:70%"></div></div><div class="tr-n">70건</div></div>
+          <div class="tr-row"><div class="tr-time">00–03시</div><div class="tr-bw"><div class="tr-b" style="width:30%"></div></div><div class="tr-n">30건</div></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+
+  <!-- ④ 관찰일지 -->
+  <div id="sc-jn" class="screen">
+    <div class="jn-hero">
+      <div class="jn-hero-in">
+        <h1>📖 관찰일지</h1>
+        <div class="jn-ctrl">
+          <div class="jn-sw">
+            <span>🔍</span>
+            <input placeholder="고양이 이름, 지역으로 검색">
+          </div>
+          <select class="jn-sort">
+            <option>최근 목격순</option>
+            <option>팔로워 많은순</option>
+            <option>관찰 기록 많은순</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="jn-body">
+      <div class="jn-kpi">
+        <div class="kpi-card"><div class="kpi-n">14</div><div class="kpi-l">등록된 고양이</div></div>
+        <div class="kpi-card"><div class="kpi-n">27</div><div class="kpi-l">총 관찰 기록</div></div>
+        <div class="kpi-card"><div class="kpi-n">359</div><div class="kpi-l">총 팔로워</div></div>
+        <div class="kpi-card"><div class="kpi-n">8</div><div class="kpi-l">활동 지역 수</div></div>
+      </div>
+      <div class="jn-cols">
+        <div class="jn-col" id="ccards-left"></div>
+        <div class="jn-col" id="ccards-right"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ⑤ 뱃지 -->
+  <div id="sc-bd" class="screen">
+    <div class="bd-hero">
+      <div class="bd-hero-in">
+        <div class="bd-user">
+          <div class="bd-ava">🐱</div>
+          <div>
+            <div class="bd-nm">고양이탐정</div>
+            <div class="bd-rk">⭐ 관찰자 등급</div>
+            <div class="bd-stats">
+              <div class="bds-item"><div class="bds-n">23</div><div class="bds-l">발견한 냥이</div></div>
+              <div class="bds-item"><div class="bds-n">18</div><div class="bds-l">연속 기록일</div></div>
+              <div class="bds-item"><div class="bds-n">5</div><div class="bds-l">팔로우 중</div></div>
+              <div class="bds-item"><div class="bds-n">6</div><div class="bds-l">획득 뱃지</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bd-next">
+          <div class="bd-next-lbl">다음 등급까지</div>
+          <div class="bd-next-nm">🏆 지역 전문가</div>
+          <div class="bd-next-bar"><div class="bd-next-fill"></div></div>
+          <div class="bd-next-sub">23 / 50마리</div>
+        </div>
+      </div>
+    </div>
+    <div class="bd-body">
+
+      <!-- 필터 토글 -->
+      <div class="bd-filter-row">
+        <div>
+          <div class="bd-filter-lbl">뱃지 목록</div>
+          <div class="bd-filter-sub">총 35개의 뱃지 · 6개 획득</div>
+        </div>
+        <div class="bd-filter-right">
+          <span class="bd-filter-cnt" id="bd-cnt-lbl">35개 표시 중</span>
+          <span style="font-size:13px;color:var(--muted)">보유만 보기</span>
+          <div class="tog" id="bd-own-tog" onclick="bdFilterOwned()"></div>
+        </div>
+      </div>
+
+      <!-- ① 발견 기록 -->
+      <div class="bd-cat">
+        <div class="bd-cat-hdr"><span class="bd-cat-ico">🐾</span><span class="bd-cat-nm">발견 기록</span><span class="bd-cat-sub">1 / 5 획득</span></div>
+        <div class="bd-grid">
+          <div class="bcard got rarity-c">
+            <div class="bd-got-tag">획득!</div>
+            <span class="bd-rarity rarity-c">일반</span>
+            <span class="b-emo">🗺️</span><div class="b-nm">탐험가</div>
+            <div class="b-ds">길고양이 10마리를 처음으로 발견했어요</div>
+            <div class="bprog"><div class="bpf" data-p="100"></div></div><div class="bplb">10 / 10 완료</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🦶</span><div class="b-nm">베테랑 탐험가</div>
+            <div class="b-ds">30마리의 길고양이를 발견하세요</div>
+            <div class="bprog"><div class="bpf" data-p="77"></div></div><div class="bplb">23 / 30마리</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">📌</span><div class="b-nm">지역 전문가</div>
+            <div class="b-ds">같은 동네 고양이 50마리 등록하기</div>
+            <div class="bprog"><div class="bpf" data-p="46"></div></div><div class="bplb">23 / 50마리</div>
+          </div>
+          <div class="bcard locked rarity-e">
+            <span class="bd-rarity rarity-e">✦✦ 영웅</span>
+            <span class="b-emo">🔬</span><div class="b-nm">냥박사</div>
+            <div class="b-ds">100마리 이상 기록한 관찰 전문가</div>
+            <div class="bprog"><div class="bpf" data-p="23"></div></div><div class="bplb">23 / 100마리</div>
+          </div>
+          <div class="bcard locked rarity-l">
+            <span class="bd-rarity rarity-l">★ 전설</span>
+            <span class="b-emo">👑</span><div class="b-nm">전설의 냥탐</div>
+            <div class="b-ds">무려 200마리를 발견한 전설적 탐험가</div>
+            <div class="bprog"><div class="bpf" data-p="11"></div></div><div class="bplb">23 / 200마리</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 연속 기록 -->
+      <div class="bd-cat">
+        <div class="bd-cat-hdr"><span class="bd-cat-ico">📅</span><span class="bd-cat-nm">연속 기록</span><span class="bd-cat-sub">2 / 5 획득</span></div>
+        <div class="bd-grid">
+          <div class="bcard got rarity-c">
+            <div class="bd-got-tag">획득!</div>
+            <span class="bd-rarity rarity-c">일반</span>
+            <span class="b-emo">🌱</span><div class="b-nm">시작의 발자국</div>
+            <div class="b-ds">냥이지도에 첫 번째 기록을 남겼어요</div>
+            <div class="bprog"><div class="bpf" data-p="100"></div></div><div class="bplb">1 / 1 완료</div>
+          </div>
+          <div class="bcard got rarity-c">
+            <div class="bd-got-tag">획득!</div>
+            <span class="bd-rarity rarity-c">일반</span>
+            <span class="b-emo">🌙</span><div class="b-nm">꾸준한 관찰자</div>
+            <div class="b-ds">14일 연속으로 기록을 남겼어요</div>
+            <div class="bprog"><div class="bpf" data-p="100"></div></div><div class="bplb">14 / 14 완료</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">📅</span><div class="b-nm">관찰자</div>
+            <div class="b-ds">30일 연속 기록에 도전하세요!</div>
+            <div class="bprog"><div class="bpf" data-p="60"></div></div><div class="bplb">18 / 30일</div>
+          </div>
+          <div class="bcard locked rarity-e">
+            <span class="bd-rarity rarity-e">✦✦ 영웅</span>
+            <span class="b-emo">📆</span><div class="b-nm">한 달의 기록</div>
+            <div class="b-ds">60일 연속 꾸준히 기록하기</div>
+            <div class="bprog"><div class="bpf" data-p="30"></div></div><div class="bplb">18 / 60일</div>
+          </div>
+          <div class="bcard locked rarity-l">
+            <span class="bd-rarity rarity-l">★ 전설</span>
+            <span class="b-emo">🌟</span><div class="b-nm">냥이와 동행</div>
+            <div class="b-ds">100일 연속, 진정한 냥이 친구</div>
+            <div class="bprog"><div class="bpf" data-p="18"></div></div><div class="bplb">18 / 100일</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ 소셜 활동 -->
+      <div class="bd-cat">
+        <div class="bd-cat-hdr"><span class="bd-cat-ico">💛</span><span class="bd-cat-nm">소셜 활동</span><span class="bd-cat-sub">1 / 5 획득</span></div>
+        <div class="bd-grid">
+          <div class="bcard got rarity-c">
+            <div class="bd-got-tag">획득!</div>
+            <span class="bd-rarity rarity-c">일반</span>
+            <span class="b-emo">💌</span><div class="b-nm">첫 팔로우</div>
+            <div class="b-ds">처음으로 고양이를 팔로우했어요</div>
+            <div class="bprog"><div class="bpf" data-p="100"></div></div><div class="bplb">1 / 1 완료</div>
+          </div>
+          <div class="bcard locked rarity-c">
+            <span class="bd-rarity rarity-c">일반</span>
+            <span class="b-emo">🤝</span><div class="b-nm">소셜냥</div>
+            <div class="b-ds">10마리 이상 팔로우하기</div>
+            <div class="bprog"><div class="bpf" data-p="50"></div></div><div class="bplb">5 / 10마리</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">👥</span><div class="b-nm">팬클럽</div>
+            <div class="b-ds">20마리를 팔로우하는 팬클럽 회원</div>
+            <div class="bprog"><div class="bpf" data-p="25"></div></div><div class="bplb">5 / 20마리</div>
+          </div>
+          <div class="bcard locked rarity-e">
+            <span class="bd-rarity rarity-e">✦✦ 영웅</span>
+            <span class="b-emo">📣</span><div class="b-nm">인플루언서</div>
+            <div class="b-ds">30마리 이상 팔로우하는 영향력자</div>
+            <div class="bprog"><div class="bpf" data-p="17"></div></div><div class="bplb">5 / 30마리</div>
+          </div>
+          <div class="bcard locked rarity-l">
+            <span class="bd-rarity rarity-l">★ 전설</span>
+            <span class="b-emo">🏠</span><div class="b-nm">냥이 가족</div>
+            <div class="b-ds">50마리의 고양이를 가족처럼 팔로우</div>
+            <div class="bprog"><div class="bpf" data-p="10"></div></div><div class="bplb">5 / 50마리</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ 사진 제보 -->
+      <div class="bd-cat">
+        <div class="bd-cat-hdr"><span class="bd-cat-ico">📷</span><span class="bd-cat-nm">사진 제보</span><span class="bd-cat-sub">1 / 5 획득</span></div>
+        <div class="bd-grid">
+          <div class="bcard got rarity-c">
+            <div class="bd-got-tag">획득!</div>
+            <span class="bd-rarity rarity-c">일반</span>
+            <span class="b-emo">📸</span><div class="b-nm">첫 제보 사진</div>
+            <div class="b-ds">냥이지도에 첫 번째 사진을 제보했어요</div>
+            <div class="bprog"><div class="bpf" data-p="100"></div></div><div class="bplb">1 / 1 완료</div>
+          </div>
+          <div class="bcard locked rarity-c">
+            <span class="bd-rarity rarity-c">일반</span>
+            <span class="b-emo">🤳</span><div class="b-nm">포토그래퍼</div>
+            <div class="b-ds">사진 10장 이상 제보하기</div>
+            <div class="bprog"><div class="bpf" data-p="30"></div></div><div class="bplb">3 / 10장</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🎞</span><div class="b-nm">사진작가</div>
+            <div class="b-ds">30장 이상의 고양이 사진 제보하기</div>
+            <div class="bprog"><div class="bpf" data-p="10"></div></div><div class="bplb">3 / 30장</div>
+          </div>
+          <div class="bcard locked rarity-e">
+            <span class="bd-rarity rarity-e">✦✦ 영웅</span>
+            <span class="b-emo">🎥</span><div class="b-nm">냥이 PD</div>
+            <div class="b-ds">100장 제보의 전문 냥이 촬영가</div>
+            <div class="bprog"><div class="bpf" data-p="3"></div></div><div class="bplb">3 / 100장</div>
+          </div>
+          <div class="bcard locked rarity-l">
+            <span class="bd-rarity rarity-l">★ 전설</span>
+            <span class="b-emo">🏆</span><div class="b-nm">포토 마스터</div>
+            <div class="b-ds">200장, 냥이 사진의 거장이에요</div>
+            <div class="bprog"><div class="bpf" data-p="1"></div></div><div class="bplb">3 / 200장</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑤ 특별 활동 -->
+      <div class="bd-cat">
+        <div class="bd-cat-hdr"><span class="bd-cat-ico">⭐</span><span class="bd-cat-nm">특별 활동</span><span class="bd-cat-sub">1 / 5 획득</span></div>
+        <div class="bd-grid">
+          <div class="bcard got rarity-r">
+            <div class="bd-got-tag">획득!</div>
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🌙</span><div class="b-nm">새벽 냥탐</div>
+            <div class="b-ds">자정 이후 첫 제보를 남긴 야행성 탐험가</div>
+            <div class="bprog"><div class="bpf" data-p="100"></div></div><div class="bplb">1 / 1 완료</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🦉</span><div class="b-nm">야행성 탐정</div>
+            <div class="b-ds">자정 이후 제보 5건 달성하기</div>
+            <div class="bprog"><div class="bpf" data-p="40"></div></div><div class="bplb">2 / 5건</div>
+          </div>
+          <div class="bcard locked rarity-e">
+            <span class="bd-rarity rarity-e">✦✦ 영웅</span>
+            <span class="b-emo">✂️</span><div class="b-nm">TNR 리포터</div>
+            <div class="b-ds">TNR 고양이 10마리를 기록하기</div>
+            <div class="bprog"><div class="bpf" data-p="10"></div></div><div class="bplb">1 / 10마리</div>
+          </div>
+          <div class="bcard locked rarity-l">
+            <span class="bd-rarity rarity-l">★ 전설</span>
+            <span class="b-emo">🦋</span><div class="b-nm">희귀종 발견</div>
+            <div class="b-ds">특이한 털색의 희귀 고양이를 발견하세요</div>
+            <div class="bprog"><div class="bpf" data-p="0"></div></div><div class="bplb">0 / 1마리</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">☔</span><div class="b-nm">우천의 탐정</div>
+            <div class="b-ds">비 오는 날 고양이 제보 3건 달성하기</div>
+            <div class="bprog"><div class="bpf" data-p="0"></div></div><div class="bplb">0 / 3건</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑥ 지역 탐험 -->
+      <div class="bd-cat">
+        <div class="bd-cat-hdr"><span class="bd-cat-ico">📍</span><span class="bd-cat-nm">지역 탐험</span><span class="bd-cat-sub">0 / 5 획득</span></div>
+        <div class="bd-grid">
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🟠</span><div class="b-nm">남구 탐험대</div>
+            <div class="b-ds">울산 남구 고양이 20마리 기록하기</div>
+            <div class="bprog"><div class="bpf" data-p="75"></div></div><div class="bplb">15 / 20마리</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🟡</span><div class="b-nm">중구 탐험대</div>
+            <div class="b-ds">울산 중구 고양이 20마리 기록하기</div>
+            <div class="bprog"><div class="bpf" data-p="40"></div></div><div class="bplb">8 / 20마리</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🔵</span><div class="b-nm">동구 탐험대</div>
+            <div class="b-ds">울산 동구 고양이 10마리 기록하기</div>
+            <div class="bprog"><div class="bpf" data-p="30"></div></div><div class="bplb">3 / 10마리</div>
+          </div>
+          <div class="bcard locked rarity-r">
+            <span class="bd-rarity rarity-r">✦ 희귀</span>
+            <span class="b-emo">🟢</span><div class="b-nm">북구 탐험대</div>
+            <div class="b-ds">울산 북구 고양이 10마리 기록하기</div>
+            <div class="bprog"><div class="bpf" data-p="0"></div></div><div class="bplb">0 / 10마리</div>
+          </div>
+          <div class="bcard locked rarity-e">
+            <span class="bd-rarity rarity-e">✦✦ 영웅</span>
+            <span class="b-emo">🗾</span><div class="b-nm">울산 전역 탐험</div>
+            <div class="b-ds">울산 모든 구/군에서 고양이 발견하기</div>
+            <div class="bprog"><div class="bpf" data-p="60"></div></div><div class="bplb">3 / 5 구·군</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑦ 홀로그램 명예의 전당 -->
+      <div class="bd-cat">
+        <div class="bd-cat-hdr">
+          <span class="bd-cat-ico">✨</span>
+          <span class="bd-cat-nm">명예의 전당</span>
+          <span class="bd-cat-sub" style="color:transparent;background:linear-gradient(90deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#c77dff);-webkit-background-clip:text;background-clip:text;font-weight:700">극히 희귀 · 0 / 5 획득</span>
+        </div>
+        <div class="bd-grid">
+          <div class="bcard locked rarity-h">
+            <span class="bd-rarity rarity-h">◈ 홀로그램</span>
+            <span class="b-emo">🌈</span><div class="b-nm">온갖 털색 수집가</div>
+            <div class="b-ds">8가지 털색의 고양이를 모두 발견하기</div>
+            <div class="bprog"><div class="bpf" data-p="62"></div></div><div class="bplb">5 / 8종</div>
+          </div>
+          <div class="bcard locked rarity-h">
+            <span class="bd-rarity rarity-h">◈ 홀로그램</span>
+            <span class="b-emo">👑</span><div class="b-nm">울산의 냥이왕</div>
+            <div class="b-ds">울산 전역에서 고양이 100마리 발견하기</div>
+            <div class="bprog"><div class="bpf" data-p="23"></div></div><div class="bplb">23 / 100마리</div>
+          </div>
+          <div class="bcard locked rarity-h">
+            <span class="bd-rarity rarity-h">◈ 홀로그램</span>
+            <span class="b-emo">🎭</span><div class="b-nm">만능 탐험가</div>
+            <div class="b-ds">모든 카테고리에서 뱃지를 1개 이상 획득</div>
+            <div class="bprog"><div class="bpf" data-p="85"></div></div><div class="bplb">6 / 7 카테고리</div>
+          </div>
+          <div class="bcard locked rarity-h">
+            <span class="bd-rarity rarity-h">◈ 홀로그램</span>
+            <span class="b-emo">❄️</span><div class="b-nm">설날 냥탐정</div>
+            <div class="b-ds">새해 첫날 자정에 고양이를 제보하기</div>
+            <div class="bprog"><div class="bpf" data-p="0"></div></div><div class="bplb">0 / 1회</div>
+          </div>
+          <div class="bcard locked rarity-h">
+            <span class="bd-rarity rarity-h">◈ 홀로그램</span>
+            <span class="b-emo">💎</span><div class="b-nm">냥이지도의 전설</div>
+            <div class="b-ds">365일 연속 기록, 당신이 바로 전설</div>
+            <div class="bprog"><div class="bpf" data-p="5"></div></div><div class="bplb">18 / 365일</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ⑥ 사진 광장 -->
+  <div id="sc-photo" class="screen">
+    <div class="ph-hero">
+      <h1>🖼️ 사진 광장</h1>
+      <p id="ph-meta">오늘 등록된 사진들이 이곳에 모여요</p>
+    </div>
+    <div class="ph-body">
+
+      <!-- TOP 5 섹션 -->
+      <div class="ph-sec" id="ph-top5-sec" style="display:none">
+        <div class="ph-sec-hdr">
+          <span class="ph-sec-ico">🏆</span>
+          <span class="ph-sec-nm">오늘의 TOP 5</span>
+          <span class="ph-sec-sub">하트를 가장 많이 받은 사진이에요</span>
+        </div>
+        <div class="ph-top5-grid" id="ph-top5-grid"></div>
+      </div>
+
+      <!-- 전체 사진 섹션 -->
+      <div class="ph-sec" id="ph-rest-sec" style="display:none">
+        <div class="ph-sec-hdr">
+          <span class="ph-sec-ico">📸</span>
+          <span class="ph-sec-nm">오늘의 사진</span>
+          <button class="ph-shuffle-btn" onclick="shuffleRestPhotos()">🔀 순서 섞기</button>
+        </div>
+        <div class="photo-grid" id="photo-grid"></div>
+      </div>
+
+      <!-- 빈 화면 -->
+      <div class="ph-empty" id="ph-empty">
+        <span class="ph-empty-ico">🐾</span>
+        <div class="ph-empty-ttl">아직 오늘 사진이 없어요</div>
+        <p class="ph-empty-sub">
+          고양이를 발견하면 제보해 주세요!<br>
+          업로드 탭에서 사진을 올리면 이곳에 표시돼요.
+        </p>
+        <button class="ph-empty-btn" onclick="sw('up')">📷 제보하러 가기</button>
+      </div>
+    </div>
+  </div>
+  <!-- ⑦ 프로필 -->
+  <div id="sc-profile" class="screen">
+    <div class="pf-hero">
+      <div class="pf-hero-in">
+        <div class="pf-top">
+          <div class="pf-ava">🐱</div>
+          <div class="pf-info">
+            <div class="pf-name">고양이탐정</div>
+            <div class="pf-rank-badge">⭐ 관찰자 등급</div>
+            <div class="pf-desc">울산의 길고양이를 기록하는 탐험가 · 가입 2026.01.14</div>
+          </div>
+        </div>
+        <div class="pf-stat-row">
+          <div class="pf-stat"><div class="pf-stat-n">23</div><div class="pf-stat-l">발견한 냥이</div></div>
+          <div class="pf-stat"><div class="pf-stat-n">18</div><div class="pf-stat-l">연속 기록일</div></div>
+          <div class="pf-stat"><div class="pf-stat-n">5</div><div class="pf-stat-l">팔로우 중</div></div>
+          <div class="pf-stat"><div class="pf-stat-n">6</div><div class="pf-stat-l">획득 뱃지</div></div>
+          <div class="pf-stat"><div class="pf-stat-n">12</div><div class="pf-stat-l">사진 제보</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-body">
+
+      <!-- 레벨 진행 -->
+      <div class="pf-lvl-card">
+        <div class="pf-lvl-hd">
+          <div>
+            <div class="pf-lvl-side-lbl">현재 등급</div>
+            <div class="pf-lvl-nm">⭐ 관찰자</div>
+          </div>
+          <div style="text-align:right">
+            <div class="pf-lvl-side-lbl">다음 등급</div>
+            <div class="pf-lvl-nm-nxt">🏆 냥이지기</div>
+          </div>
+        </div>
+        <div class="pf-lvl-bar">
+          <div class="pf-lvl-fill" id="pf-lvl-fill" data-p="46"></div>
+        </div>
+        <div class="pf-lvl-hint">냥이지기까지 27마리 더 발견하세요 &nbsp;·&nbsp; 23 / 50마리</div>
+        <div class="pf-steps">
+          <div class="pf-step done"><div class="pf-step-dot">✓</div><div class="pf-step-lbl">새싹</div></div>
+          <div class="pf-step done"><div class="pf-step-dot">✓</div><div class="pf-step-lbl">탐험가</div></div>
+          <div class="pf-step cur"><div class="pf-step-dot">●</div><div class="pf-step-lbl">관찰자</div></div>
+          <div class="pf-step"><div class="pf-step-dot"></div><div class="pf-step-lbl">냥이지기</div></div>
+          <div class="pf-step"><div class="pf-step-dot"></div><div class="pf-step-lbl">베테랑</div></div>
+          <div class="pf-step"><div class="pf-step-dot"></div><div class="pf-step-lbl">전설</div></div>
+        </div>
+      </div>
+
+      <!-- row A: 달력 + 팔로우 -->
+      <div class="pf-row pf-row-a">
+        <div class="pf-card">
+          <div class="pf-card-hd">
+            <div class="pf-card-ttl">📅 60일 활동 기록</div>
+            <div class="pf-card-sub">최근 60일간의 제보 활동이에요</div>
+          </div>
+          <div class="pf-card-bd">
+            <div class="cal-wrap"><div class="cal-grid" id="pf-cal"></div></div>
+            <div class="cal-legend">
+              <span>적음</span>
+              <div class="cal-leg-box" style="background:var(--border)"></div>
+              <div class="cal-leg-box" style="background:#d4ebc8"></div>
+              <div class="cal-leg-box" style="background:#8fcb7a"></div>
+              <div class="cal-leg-box" style="background:#4fa843"></div>
+              <div class="cal-leg-box" style="background:var(--primary)"></div>
+              <span>많음</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pf-card">
+          <div class="pf-card-hd">
+            <div class="pf-card-ttl">💛 팔로우 중인 냥이</div>
+            <div class="pf-card-sub">5마리를 팔로우하고 있어요</div>
+          </div>
+          <div id="pf-follows"></div>
+        </div>
+      </div>
+
+      <!-- row B: 털색통계 + 최근활동 -->
+      <div class="pf-row pf-row-b">
+        <div class="pf-card">
+          <div class="pf-card-hd">
+            <div class="pf-card-ttl">🎨 털색별 발견 통계</div>
+            <div class="pf-card-sub">총 23마리의 털색 분포예요</div>
+          </div>
+          <div class="pf-card-bd" id="pf-fur"></div>
+        </div>
+
+        <div class="pf-card">
+          <div class="pf-card-hd">
+            <div class="pf-card-ttl">📋 최근 제보 활동</div>
+            <div class="pf-card-sub">최근에 기록한 고양이들이에요</div>
+          </div>
+          <div id="pf-acts"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+
+<!-- ══ 사진 라이트박스 ══ -->
+<div class="ph-lb" id="ph-lb">
+  <div class="ph-lb-bg" id="ph-lb-bg"></div>
+  <button class="ph-lb-close" id="ph-lb-close">&#x2715;</button>
+  <div class="ph-lb-shell">
+    <div class="ph-lb-imgbox">
+      <button class="ph-lb-nav ph-lb-prev hide" id="ph-lb-prev">&#8249;</button>
+      <img id="ph-lb-img" src="" alt="사진">
+      <button class="ph-lb-nav ph-lb-next hide" id="ph-lb-next">&#8250;</button>
+    </div>
+    <div class="ph-lb-footer">
+      <div class="ph-lb-dots" id="ph-lb-dots"></div>
+      <div class="ph-lb-meta">
+        <span id="ph-lb-nick"></span>
+        <span id="ph-lb-counter"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-bg" id="modal" onclick="closeMod(event)">
+  <div class="modal-box">
+    <div class="m-top">
+      <div class="m-ttl">🤔 기존 고양이와 비슷합니다</div>
+      <div class="m-sub">AI가 털색·무늬·귀 모양을 분석했어요</div>
+    </div>
+    <div class="m-sim">
+      <div class="m-sim-hd">
+        <div class="m-sim-txt">유사도</div>
+        <div class="m-sim-pct">92%</div>
+      </div>
+      <div class="m-bar"><div class="m-bar-fill" id="mfill"></div></div>
+    </div>
+    <div class="m-match">
+      <div class="m-emo">🐱</div>
+      <div>
+        <div class="m-nm">삼산공원 치즈냥</div>
+        <div class="m-mt">📍 울산 남구 삼산동 &nbsp;·&nbsp; 💛 팔로워 52명</div>
+      </div>
+      <div class="m-score"><div class="m-sn">92%</div><div class="m-sl">일치</div></div>
+    </div>
+    <div class="m-cmp">
+      <div class="m-cmp-ttl">특징 비교</div>
+      <div class="m-cmp-row"><div class="m-cmp-ft">털색</div><div class="m-cmp-val">🟠 치즈</div><div class="m-cmp-ic">✅</div></div>
+      <div class="m-cmp-row"><div class="m-cmp-ft">무늬</div><div class="m-cmp-val">줄무늬</div><div class="m-cmp-ic">✅</div></div>
+      <div class="m-cmp-row"><div class="m-cmp-ft">귀 모양</div><div class="m-cmp-val">오른쪽 끝 접힘</div><div class="m-cmp-ic">✅</div></div>
+      <div class="m-cmp-row"><div class="m-cmp-ft">꼬리</div><div class="m-cmp-val">긴 꼬리</div><div class="m-cmp-ic">🔶</div></div>
+    </div>
+    <div class="m-acts">
+      <button class="m-act m-act-s" onclick="doReg('new')">🆕 새 고양이로 등록</button>
+      <button class="m-act m-act-p" onclick="doReg('same')">✅ 같은 고양이로 등록</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/maps.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/photo-gallery.js"></script>
+<script src="js/badges.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
